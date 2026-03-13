@@ -1,0 +1,14 @@
+{
+	"id": "deck_pecks",
+	"name": "DeckPecks",
+	"display_name": "Deck Pecks",
+	"author": ["Wizchilla"],
+	"description": "Adds various new decks to the game",
+	"prefix": "deckpecks",
+	"main_file": "DeckPecks.lua",
+	"priority": 0,
+	"badge_colour": "#FF5733",
+	"badge_text_colour": "#FFFFFF",
+	"version": "1.0.0",
+	"dependencies": ["Steamodded (>=1.*.*-beta-1224a)","Lovely (>=0.8)"]
+}
