@@ -191,3 +191,112 @@ SMODS.Back {
         end
     end,
 }
+
+SMODS.current_mod.custom_card_areas = function(game)
+    game.deckpecks_redHolder = CardArea(
+        G.deck.T.x+5,
+        G.deck.T.y+3,
+        game.CARD_W * 0.95,
+        game.CARD_H * 0.95,
+        {
+            card_limit = 1,
+            type = 'deck',
+            highlight_limit = 1,
+            bg_colour = G.C.RED,
+            no_card_count = true,
+            align_buttons = true,
+        }
+    )
+    game.deckpecks_blueHolder = CardArea(
+        G.deck.T.x+5,
+        G.deck.T.y+3,
+        game.CARD_W * 0.95,
+        game.CARD_H * 0.95,
+        {
+            card_limit = 1,
+            type = 'deck',
+            highlight_limit = 1,
+            bg_colour = G.C.BLUE,
+            no_card_count = true,
+            align_buttons = true,
+        }
+    )
+end
+
+SMODS.Back {
+    key = "double",
+    atlas = "deckpeck_atlas",
+    pos = { x = 6, y = 0 },
+    calculate = function(self, card, context)
+        local pCounter = 1
+        if context.setting_blind then
+            G.E_MANAGER:add_event(Event({
+                blocking = true,
+                trigger = "before",
+                func = function() 
+                    for k, v in ipairs(G.deck.cards) do
+                        local newCard = SMODS.create_card{set = "Base",rank=v.base.value,suit=v.base.suit,area=G.deckpecks_blueHolder}
+                        G.deckpecks_blueHolder:emplace(newCard)
+                        draw_card(G.deck, G.deckpecks_redHolder, pCounter*100/#G.deck.cards, 'up', false, v)
+                        pCounter = pCounter + 1
+                    end
+                    G.E_MANAGER:add_event(Event({
+                        blocking = true,
+                        trigger = "immediate",
+                        func = function() 
+                            for k, v in pairs(G.deckpecks_redHolder.cards) do
+                                if v.children.back then
+                                    v.children.back:set_sprite_pos({x = 4, y = 0})
+                                end
+                            end
+                            for k, v in pairs(G.deckpecks_blueHolder.cards) do
+                                if v.children.back then
+                                    v.children.back:set_sprite_pos({x = 5, y = 0})
+                                end
+                            end
+                            pCounter = 1
+                            for k, v in ipairs(G.deckpecks_redHolder.cards) do
+                                draw_card(G.deckpecks_redHolder, G.deck, pCounter*100/#G.deckpecks_redHolder.cards, 'down', false, v)
+                                pCounter = pCounter + 1
+                            end
+                            pCounter = 1
+                            for k, v in ipairs(G.deckpecks_blueHolder.cards) do
+                                draw_card(G.deckpecks_blueHolder, G.deck, pCounter*100/#G.deckpecks_blueHolder.cards, 'down', false, v)
+                                table.insert(G.playing_cards,v)
+                                pCounter = pCounter + 1
+                            end
+                            return true
+                        end
+                    }))
+                    G.deck.config.card_limit = #G.deck.cards
+                    return true
+                end
+            }))
+        end
+        if context.end_of_round and not context.game_over and context.main_eval then
+            local event = Event({
+                blockable = true,
+                blocking = true,
+                trigger = "after",
+                delay = 2.1,
+                func = function()
+                    ease_dollars(amount, true)
+                    attention_text({
+                        scale = scale,
+                        text = text,
+                        hold = 2,
+                        align = 'cm',
+                        offset = {x = 0, y = -2.7},
+                        major = G.play,
+                        backdrop_colour = color
+                    })
+                    play_sound('gong', 0.94, 0.3)
+                    play_sound('gong', 0.94*1.5, 0.2)
+                    play_sound('tarot1', 1.5)
+                    return true
+                end
+            })
+            G.E_MANAGER:add_event(event)
+        end
+    end,
+}
