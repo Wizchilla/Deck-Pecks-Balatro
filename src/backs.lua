@@ -300,3 +300,29 @@ SMODS.Back {
         end
     end,
 }
+
+SMODS.Back {
+    key = "deckofcard",
+    atlas = "deckpeck_atlas",
+    pos = { x = 0, y = 1 },
+    config = {ante_scaling = 0.1},
+    
+    apply = function(self, back)
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                for k, _ in pairs(G.P_CENTERS) do
+                    print(k)
+                end
+                for k, v in pairs(G.playing_cards) do
+                    if v.base.suit ~= 'Spades' or v.base.value ~= 'Ace' then
+                        SMODS.destroy_cards(v)
+                    end
+                end
+                ease_ante(-1)
+                G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante or G.GAME.round_resets.ante
+                G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante - 1
+                return true
+            end
+        }))
+    end,
+}
